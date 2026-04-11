@@ -3,6 +3,19 @@
 Enterprise-flavored on-prem Kubernetes lab for vacancies that expect more than a generic cloud-native demo.  
 This repository focuses on an honest `enterprise-core v1` scope: multi-node cluster operations, `Flux` GitOps, `Helm`, `MetalLB`, `Traefik`, `Vault`-backed secrets, `MinIO` persistence, and observability with `Prometheus`, `Grafana`, `Loki`, and `Jaeger`.
 
+## Portfolio Role
+
+This is the primary platform flagship in the portfolio.
+
+Use this repository when the discussion is about:
+
+- multi-node Kubernetes operations instead of only single-cluster app delivery
+- `Flux` release, break, and rollback flow
+- ingress, external IP exposure, secrets, storage, and observability in one lab
+- operator automation and runbook-first platform work
+
+Use `k8s-gitops-platform-lab` instead when the review should stay on the cleaner baseline GitOps path with `Argo CD`, local TLS, and a lighter platform scope.
+
 ## Status
 
 `Definition of Done` is achieved for the first strong portfolio version.
