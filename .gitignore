@@ -1,0 +1,6 @@
+.tools/
+artifacts/
+cluster/addons/metallb-address-pool.generated.yaml
+__pycache__/
+*.pyc
+todo.md

@@ -1,0 +1,11 @@
+image:
+  repository: k8s-lab/webhook-ingestion-service
+  tag: "2.0.0"
+
+secrets:
+  create: false
+  existingSecretName: webhook-ingestion-secrets
+tracing:
+  enabled: true
+ingress:
+  host: webhook.platform.lab

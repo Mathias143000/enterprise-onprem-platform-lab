@@ -1,0 +1,33 @@
+nameOverride: webhook-ingestion-service
+
+image:
+  repository: k8s-lab/webhook-ingestion-service
+  tag: "2.0.0"
+  pullPolicy: IfNotPresent
+
+replicaCount: 1
+apiKey: "demo-api-key"
+webhookSecret: "demo-webhook-secret"
+secrets:
+  create: true
+  existingSecretName: ""
+tracing:
+  enabled: false
+  serviceName: webhook-ingestion-service
+  otlpEndpoint: http://jaeger-collector.observability.svc.cluster.local:4318
+ingress:
+  enabled: true
+  className: traefik
+  host: webhook.platform.lab
+  tls:
+    enabled: false
+    secretName: webhook-demo-tls
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 192Mi
+  limits:
+    cpu: 500m
+    memory: 384Mi

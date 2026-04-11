@@ -1,0 +1,13 @@
+image:
+  repository: k8s-lab/service-desk-api
+  tag: "2.0.0"
+
+appVersion: "2.0.1"
+secrets:
+  create: false
+  existingSecretName: service-desk-secrets
+tracing:
+  enabled: true
+ingress:
+  host: service-desk.platform.lab
+

@@ -1,0 +1,11 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: platform-repo
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  timeout: 60s
+  url: http://host.docker.internal:18018/git/platform.git
+  ref:
+    branch: main

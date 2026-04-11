@@ -1,0 +1,40 @@
+nameOverride: service-desk-api
+
+image:
+  repository: k8s-lab/service-desk-api
+  tag: "2.0.0"
+  pullPolicy: IfNotPresent
+
+appVersion: "2.0.0"
+djangoSecretKey: "change-me-service-desk"
+replicaCount: 1
+readinessPath: /api/health/
+secrets:
+  create: true
+  existingSecretName: ""
+tracing:
+  enabled: false
+  serviceName: service-desk-api
+  otlpEndpoint: http://jaeger-collector.observability.svc.cluster.local:4318
+ingress:
+  enabled: true
+  className: traefik
+  host: service-desk.platform.lab
+  tls:
+    enabled: false
+    secretName: service-desk-demo-tls
+  annotations: {}
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+hpa:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70

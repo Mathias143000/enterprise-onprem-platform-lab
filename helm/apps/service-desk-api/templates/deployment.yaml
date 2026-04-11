@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "service-desk-api.fullname" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "service-desk-api.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "service-desk-api.fullname" . }}
+    spec:
+      containers:
+        - name: api
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: DJANGO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default (include "service-desk-api.fullname" .) .Values.secrets.existingSecretName }}
+                  key: DJANGO_SECRET_KEY
+            - name: DJANGO_DEBUG
+              value: "0"
+            - name: DJANGO_ALLOWED_HOSTS
+              value: "{{ .Values.ingress.host }},localhost,127.0.0.1,service-desk-api,service-desk-api.service-desk.svc.cluster.local"
+            - name: DJANGO_CSRF_TRUSTED_ORIGINS
+              value: "https://{{ .Values.ingress.host }}:18443,https://{{ .Values.ingress.host }}"
+            - name: ASYNC_TASKS_ENABLED
+              value: "0"
+            - name: JSON_LOGS
+              value: "1"
+            - name: REQUEST_ID_HEADER
+              value: "X-Request-ID"
+            - name: APP_VERSION
+              value: {{ .Values.appVersion | quote }}
+            - name: TRACING_ENABLED
+              value: {{ ternary "1" "0" .Values.tracing.enabled | quote }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ .Values.tracing.serviceName | quote }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.tracing.otlpEndpoint | quote }}
+            - name: RUN_MIGRATIONS
+              value: "1"
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessPath }}
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: {{ include "service-desk-api.fullname" . | quote }}
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/health/
+              port: http
+              httpHeaders:
+                - name: Host
+                  value: {{ include "service-desk-api.fullname" . | quote }}
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          resources:
+{{ toYaml .Values.resources | indent 12 }}

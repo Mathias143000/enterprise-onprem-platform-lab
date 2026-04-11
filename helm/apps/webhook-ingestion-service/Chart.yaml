@@ -1,0 +1,7 @@
+apiVersion: v2
+name: webhook-ingestion-service
+description: Minimal Kubernetes packaging for the webhook ingestion workload.
+type: application
+version: 0.1.0
+appVersion: "2.0.0"
+

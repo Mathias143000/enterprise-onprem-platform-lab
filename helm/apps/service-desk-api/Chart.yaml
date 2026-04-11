@@ -1,0 +1,7 @@
+apiVersion: v2
+name: service-desk-api
+description: Minimal Kubernetes packaging for the service desk workload.
+type: application
+version: 0.1.0
+appVersion: "2.0.0"
+

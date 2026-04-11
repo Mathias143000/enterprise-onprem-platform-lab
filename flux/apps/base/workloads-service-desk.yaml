@@ -1,0 +1,32 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: service-desk-api
+  namespace: service-desk
+spec:
+  interval: 5m0s
+  timeout: 10m0s
+  chart:
+    spec:
+      chart: ./helm/apps/service-desk-api
+      sourceRef:
+        kind: GitRepository
+        name: platform-repo
+        namespace: flux-system
+  values:
+    appVersion: "2.0.2"
+    readinessPath: /api/health/
+    image:
+      repository: k8s-lab/service-desk-api
+      tag: "2.0.0"
+    secrets:
+      create: false
+      existingSecretName: service-desk-secrets
+    tracing:
+      enabled: true
+      serviceName: service-desk-api
+      otlpEndpoint: http://jaeger-collector.observability.svc.cluster.local:4318
+    ingress:
+      enabled: true
+      className: traefik
+      host: service-desk.platform.lab
