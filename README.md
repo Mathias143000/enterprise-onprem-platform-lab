@@ -18,7 +18,7 @@ Use `k8s-gitops-platform-lab` instead when the review should stay on the cleaner
 
 ## Status
 
-`Definition of Done` is achieved for the first strong portfolio version.
+`Definition of Done` is achieved for the first strong portfolio version and the first technical hardening wave.
 
 What is implemented and validated:
 
@@ -30,6 +30,10 @@ What is implemented and validated:
 - `Prometheus`, `Grafana`, `Loki`, `Jaeger`
 - GitOps release, failure, and rollback drill
 - smoke/evidence automation and operator runbook
+- CI-safe hardening check with Helm render validation, policy gates, and SBOM evidence
+- runtime security markers for workload Deployments
+- explicit Vault secret seed/promotion flow
+- postmortem-grade incident drill
 
 What is explicitly deferred:
 
@@ -62,6 +66,7 @@ Those items stay in backlog because the goal of this version is credible platfor
 - Secrets: `Vault` + `External Secrets`
 - Storage: `MinIO` on PVC
 - Observability: `Prometheus`, `Grafana`, `Loki`, `Jaeger`
+- Hardening: GitHub Actions, policy checks, SBOM evidence
 - Automation: `PowerShell` + `Python`
 - Demo workloads:
   - `service-desk-api`
@@ -81,6 +86,7 @@ For a fast technical review, the most useful order is:
 4. `scripts/cluster-up.ps1` for bootstrap orchestration
 5. `automation/smoke_check.py` for what is actually verified
 6. `scripts/demo-rollout.ps1` for release, break, and rollback proof
+7. [docs/hardening.md](docs/hardening.md) for CI-safe policy, SBOM, secrets, and incident evidence
 
 ## Quick Demo
 
@@ -90,26 +96,32 @@ For a fast technical review, the most useful order is:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate.ps1
 ```
 
-2. Bootstrap the platform:
+2. Run CI-safe hardening validation:
+
+```powershell
+python automation\hardening_check.py --output-dir artifacts\hardening
+```
+
+3. Bootstrap the platform:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\cluster-up.ps1
 ```
 
-3. Run smoke verification:
+4. Run smoke verification:
 
 ```powershell
 python automation\smoke_check.py
 ```
 
-4. Check workload ingress:
+5. Check workload ingress:
 
 ```powershell
 curl.exe -H "Host: service-desk.platform.lab" http://127.0.0.1:18080/api/health/
 curl.exe -H "Host: webhook.platform.lab" http://127.0.0.1:18080/health
 ```
 
-5. Run GitOps drill:
+6. Run GitOps drill:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-rollout.ps1 -Action release
@@ -117,7 +129,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-rollout.ps1 -
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-rollout.ps1 -Action rollback
 ```
 
-6. Collect evidence:
+7. Run the incident drill:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\incident-drill.ps1
+```
+
+8. Collect evidence:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\collect-evidence.ps1
@@ -128,6 +146,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\collect-evidence.p
 The current DoD was verified with:
 
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate.ps1`
+- `python automation\hardening_check.py --output-dir artifacts\hardening`
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\cluster-down.ps1`
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\cluster-up.ps1`
 - `python automation\smoke_check.py`
@@ -135,8 +154,10 @@ The current DoD was verified with:
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-rollout.ps1 -Action release`
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-rollout.ps1 -Action break`
 - `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\demo-rollout.ps1 -Action rollback`
+- `powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\incident-drill.ps1`
 
 The evidence bundle is written to `artifacts/evidence/latest/`.
+Incident evidence is written to `artifacts/incidents/latest/`.
 
 ## Validation Story
 
@@ -150,11 +171,15 @@ The current DoD is validated through an operator-first path, not only through st
 | Secret delivery | `Vault` + `External Secrets` synced into workloads and exercised during smoke |
 | Storage persistence | `MinIO` PVC restart persistence check |
 | Platform observability | `Prometheus`, `Grafana`, `Loki`, and `Jaeger` reachable after bootstrap |
+| CI-safe hardening | `.github/workflows/hardening.yml` + `automation/hardening_check.py` |
+| Policy and SBOM evidence | `artifacts/hardening/hardening-report.md` + `artifacts/hardening/sbom.cdx.json` |
+| Incident evidence | `scripts/incident-drill.ps1` + `runbooks/incident-drill.md` |
 
-This is intentionally a PowerShell-first local validation story because the repo is meant to prove operator workflow on a Windows workstation. The next step is not to replace that path, but to automate a representative subset of it in CI so the repo shows both hands-on platform operations and repeatable machine validation.
+This remains intentionally PowerShell-first for full local platform operations because the repo is meant to prove operator workflow on a Windows workstation. The hardening wave adds a CI-safe representative validation layer for Helm rendering, policy gates, SBOM evidence, secret-flow checks, and incident-drill assets.
 
 ## Repo Map
 
+- `.github/` CI hardening workflow
 - `cluster/` cluster-side add-ons and generated MetalLB pool
 - `flux/` GitOps sources and Kustomization roots
 - `helm/` workload charts
@@ -167,9 +192,10 @@ This is intentionally a PowerShell-first local validation story because the repo
 
 - This repo uses `k3d` to simulate an on-prem cluster; it does not pretend to be a full datacenter deployment.
 - `MetalLB` assigns a real cluster IP, but on Docker Desktop the host-side demo path is intentionally routed through `localhost:18080/18443` because direct access to the Docker network VIP is unreliable from Windows.
-- `Vault` runs in dev mode for demo speed and reproducibility.
+- `Vault` runs in dev mode for demo speed and reproducibility, while the operator flow now separates environment seed paths from current runtime paths.
 - `MinIO` persistence is demonstrated with a PVC, but `Longhorn` is intentionally deferred to backlog.
 - The repo demonstrates `Flux`-driven GitOps, but not the full `GitLab -> Harbor -> Flux` enterprise chain yet.
+- The current SBOM is repo-local delivery evidence, not a full registry-backed attestation/signing platform.
 
 ## Backlog After DoD
 
@@ -182,13 +208,15 @@ This is intentionally a PowerShell-first local validation story because the repo
 - `Ansible` node preparation
 - additional failure drills: node loss, registry outage, storage degradation
 
-## Next Hardening Milestone
+## Hardening Wave 1 DoD
 
-The next meaningful upgrade for this repo is depth, not breadth:
+The first technical hardening wave is now closed around depth, not breadth:
 
-- automate a representative bootstrap + smoke path on a CI runner
-- add stronger supply-chain signals such as `SBOM`, image signing, and policy checks
-- deepen the secret and promotion story beyond the current demo-safe baseline
-- document one postmortem-grade incident drill with clearer operator evidence
+- CI-safe representative validation through GitHub Actions
+- Helm render checks for `dev` and `demo` values
+- policy gates for image tags, secret ownership, probes, resources, ingress class, and runtime security markers
+- CycloneDX-style SBOM evidence for workload images and charts
+- secret seed/promotion documentation and script support
+- postmortem-grade incident drill with timeline, smoke output, rollback, and evidence bundle
 
-That is the line between the current strong portfolio lab and a more obvious `senior+` platform signal.
+The remaining hardening backlog is intentionally larger-scope: registry-backed signing, external admission policy enforcement, production Vault auth/policies, node-loss drills, registry outage drills, and storage degradation drills.

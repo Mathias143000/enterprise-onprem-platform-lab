@@ -9,7 +9,7 @@ Show a compact enterprise-style platform story in 10-15 minutes:
 3. Vault-backed secrets
 4. metrics, logs, and traces
 5. stateful persistence
-6. failure and rollback
+6. failure, rollback, and hardening evidence
 
 ## Prerequisites
 
@@ -58,6 +58,8 @@ curl.exe -H "Host: jaeger.platform.lab" http://127.0.0.1:18080/api/services
 ```
 
 ## 5. Explain secret delivery
+
+For the hardening-wave promotion model, see [../docs/secrets-promotion.md](../docs/secrets-promotion.md).
 
 ```powershell
 kubectl get clustersecretstore enterprise-vault
@@ -117,7 +119,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\collect-evidence.p
 
 Evidence files land in `artifacts/evidence/latest/`.
 
-## 8. Tear down
+## 8. Optional hardening drill
+
+```powershell
+python automation\hardening_check.py --output-dir artifacts\hardening
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\incident-drill.ps1
+```
+
+Hardening evidence lands in `artifacts/hardening/` and incident evidence lands in `artifacts/incidents/latest/`.
+
+## 9. Tear down
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\cluster-down.ps1
