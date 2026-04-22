@@ -1,0 +1,29 @@
+name: hardening
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  static-hardening:
+    name: static hardening and supply-chain evidence
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Run hardening checks
+        run: python automation/hardening_check.py --output-dir artifacts/hardening
+
+      - name: Upload hardening evidence
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: enterprise-hardening-evidence
+          path: artifacts/hardening
