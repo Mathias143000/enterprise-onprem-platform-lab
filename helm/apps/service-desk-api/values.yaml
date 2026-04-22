@@ -12,6 +12,29 @@ readinessPath: /api/health/
 secrets:
   create: true
   existingSecretName: ""
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+command:
+  - /bin/sh
+  - -c
+
+args:
+  - |
+    if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
+      python manage.py migrate --noinput
+    fi
+    exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2 --access-logfile - --error-logfile -
+
 tracing:
   enabled: false
   serviceName: service-desk-api

@@ -12,10 +12,16 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "webhook-ingestion-service.fullname" . }}
     spec:
+{{- with .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+{{- end }}
       containers:
         - name: app
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+{{ toYaml .Values.securityContext | indent 12 }}
           ports:
             - containerPort: 8000
               name: http

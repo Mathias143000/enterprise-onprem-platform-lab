@@ -9,6 +9,7 @@ spec:
   chart:
     spec:
       chart: ./helm/apps/service-desk-api
+      reconcileStrategy: Revision
       sourceRef:
         kind: GitRepository
         name: platform-repo

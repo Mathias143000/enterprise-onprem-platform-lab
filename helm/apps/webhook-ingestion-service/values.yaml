@@ -11,6 +11,18 @@ webhookSecret: "demo-webhook-secret"
 secrets:
   create: true
   existingSecretName: ""
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
 tracing:
   enabled: false
   serviceName: webhook-ingestion-service

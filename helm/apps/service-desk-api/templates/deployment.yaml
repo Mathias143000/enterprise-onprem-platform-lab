@@ -12,10 +12,24 @@ spec:
       labels:
         app.kubernetes.io/name: {{ include "service-desk-api.fullname" . }}
     spec:
+{{- with .Values.podSecurityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+{{- end }}
       containers:
         - name: api
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+{{ toYaml .Values.securityContext | indent 12 }}
+{{- with .Values.command }}
+          command:
+{{ toYaml . | indent 12 }}
+{{- end }}
+{{- with .Values.args }}
+          args:
+{{ toYaml . | indent 12 }}
+{{- end }}
           ports:
             - containerPort: 8000
               name: http

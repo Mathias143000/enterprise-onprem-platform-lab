@@ -9,6 +9,7 @@ spec:
   chart:
     spec:
       chart: ./helm/apps/webhook-ingestion-service
+      reconcileStrategy: Revision
       sourceRef:
         kind: GitRepository
         name: platform-repo

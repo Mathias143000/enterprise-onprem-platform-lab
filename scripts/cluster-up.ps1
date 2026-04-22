@@ -118,7 +118,13 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 Wait-GitRepo -Url "http://127.0.0.1:18018/git/platform.git"
 
 $clusterList = & $k3dPath cluster list 2>$null
-$clusterExists = $clusterList | Select-String -Pattern "^$ClusterName\s"
+$clusterExists = $clusterList | Select-String -Pattern "^$ClusterName\s" | Select-Object -First 1
+if ($clusterExists -and $clusterExists.Line -match "\s0/\d+") {
+  Write-Host "Existing k3d cluster '$ClusterName' is not fully running; recreating it."
+  & $k3dPath cluster delete $ClusterName
+  $clusterExists = $null
+}
+
 if ($clusterExists -and $ForceRecreate) {
   & $k3dPath cluster delete $ClusterName
   $clusterExists = $null
@@ -138,7 +144,17 @@ if (-not $clusterExists) {
 & $k3dPath kubeconfig merge $ClusterName --kubeconfig-switch-context
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
-$apiPort = (& docker port "k3d-$ClusterName-serverlb" 6443/tcp 2>$null | Select-Object -First 1)
+$apiPort = $null
+try {
+  $apiPortOutput = & docker port "k3d-$ClusterName-serverlb" 6443/tcp 2>$null
+  if ($LASTEXITCODE -eq 0) {
+    $apiPort = $apiPortOutput | Select-Object -First 1
+  }
+}
+catch {
+  $apiPort = $null
+}
+
 if ($apiPort) {
   $normalizedApiPort = ($apiPort -replace '0\.0\.0\.0:', '') -replace '\[::\]:', ''
   & kubectl config set-cluster "k3d-$ClusterName" --server="https://127.0.0.1:$normalizedApiPort" | Out-Null
