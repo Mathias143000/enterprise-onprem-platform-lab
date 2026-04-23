@@ -14,6 +14,29 @@ $headers = @{
   "X-Vault-Token" = $VaultToken
 }
 
+function Wait-VaultReady {
+  param(
+    [int]$TimeoutSeconds = 60
+  )
+
+  $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+  while ((Get-Date) -lt $deadline) {
+    try {
+      Invoke-RestMethod `
+        -Method Get `
+        -Uri "$VaultAddress/v1/sys/health" `
+        -Headers $headers `
+        -TimeoutSec 5 | Out-Null
+      return
+    }
+    catch {
+      Start-Sleep -Seconds 2
+    }
+  }
+
+  throw "Vault did not become ready at $VaultAddress within $TimeoutSeconds seconds."
+}
+
 function Resolve-DemoSecret {
   param(
     [string]$Value,
@@ -44,6 +67,8 @@ function Write-VaultKvSecret {
     -ContentType "application/json" `
     -Body (($body | ConvertTo-Json -Depth 10)) | Out-Null
 }
+
+Wait-VaultReady
 
 $serviceDeskData = @{
   DJANGO_SECRET_KEY = Resolve-DemoSecret `

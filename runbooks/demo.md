@@ -2,7 +2,7 @@
 
 ## Goal
 
-Show a compact enterprise-style platform story in 10-15 minutes:
+Show a compact enterprise-style platform story in roughly 10-15 minutes after bootstrap, with cold starts taking longer because the cluster may need to pull multiple platform images:
 
 1. cluster bootstrap
 2. GitOps-delivered workloads

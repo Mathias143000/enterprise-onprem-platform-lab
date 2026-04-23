@@ -213,7 +213,7 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 & (Join-Path $PSScriptRoot "wait-k8s.ps1") -Namespace flux-system -Kind gitrepository -Name platform-repo -TimeoutSeconds 600
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-& (Join-Path $PSScriptRoot "wait-k8s.ps1") -Namespace flux-system -Kind kustomization -Name enterprise-platform -TimeoutSeconds 900
+& (Join-Path $PSScriptRoot "wait-k8s.ps1") -Namespace flux-system -Kind kustomization -Name enterprise-platform -TimeoutSeconds 1800
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
 & (Join-Path $PSScriptRoot "wait-k8s.ps1") -Namespace service-desk -Kind externalsecret -Name service-desk-secrets -TimeoutSeconds 600
