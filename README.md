@@ -45,7 +45,7 @@ What is explicitly deferred:
 - `Istio`
 - `Ansible` node preparation
 
-Those items stay in backlog because the goal of this version is credible platform depth, not a museum of partially implemented tools.
+Those items are explicit non-goals because the goal of this version is credible platform depth, not a museum of partially implemented tools.
 
 ## What This Repo Proves
 
@@ -193,11 +193,11 @@ This remains intentionally PowerShell-first for full local platform operations b
 - This repo uses `k3d` to simulate an on-prem cluster; it does not pretend to be a full datacenter deployment.
 - `MetalLB` assigns a real cluster IP, but on Docker Desktop the host-side demo path is intentionally routed through `localhost:18080/18443` because direct access to the Docker network VIP is unreliable from Windows.
 - `Vault` runs in dev mode for demo speed and reproducibility, while the operator flow now separates environment seed paths from current runtime paths.
-- `MinIO` persistence is demonstrated with a PVC, but `Longhorn` is intentionally deferred to backlog.
+- `MinIO` persistence is demonstrated with a PVC, while `Longhorn` is intentionally outside this portfolio slice.
 - The repo demonstrates `Flux`-driven GitOps, but not the full `GitLab -> Harbor -> Flux` enterprise chain yet.
 - The current SBOM is repo-local delivery evidence, not a full registry-backed attestation/signing platform.
 
-## Backlog After DoD
+## Explicit Non-Goals
 
 - `Rancher` management layer
 - `GitLab CI/CD`
@@ -207,6 +207,8 @@ This remains intentionally PowerShell-first for full local platform operations b
 - `Istio` + deeper service-mesh story
 - `Ansible` node preparation
 - additional failure drills: node loss, registry outage, storage degradation
+
+These are deliberate boundaries for the current flagship, not open DoD work.
 
 ## Hardening Wave 1 DoD
 
@@ -219,4 +221,4 @@ The first technical hardening wave is now closed around depth, not breadth:
 - secret seed/promotion documentation and script support
 - postmortem-grade incident drill with timeline, smoke output, rollback, and evidence bundle
 
-The remaining hardening backlog is intentionally larger-scope: registry-backed signing, external admission policy enforcement, production Vault auth/policies, node-loss drills, registry outage drills, and storage degradation drills.
+The larger-scope non-goals are intentionally excluded from this DoD: registry-backed signing, external admission policy enforcement, production Vault auth/policies, node-loss drills, registry outage drills, and storage degradation drills.
